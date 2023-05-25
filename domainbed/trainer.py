@@ -36,8 +36,14 @@ def train(test_envs, args, hparams, n_steps, checkpoint_freq, logger, writer, ta
     # setup dataset & loader
     #######################################################
     args.real_test_envs = test_envs  # for log
+
+    #algorithm class gotten from aslgorithms.py file
     algorithm_class = algorithms.get_algorithm_class(args.algorithm)
+
+
     dataset, in_splits, out_splits = get_dataset(test_envs, args, hparams, algorithm_class)
+
+    #taking care of data splits as per hparams
     test_splits = []
     if hparams.indomain_test > 0.0:
         logger.info("!!! In-domain test mode On !!!")
@@ -79,17 +85,23 @@ def train(test_envs, args, hparams, n_steps, checkpoint_freq, logger, writer, ta
     batch_sizes[test_envs] = 0
     batch_sizes = batch_sizes.tolist()
 
+
     logger.info(f"Batch sizes for each domain: {batch_sizes} (total={sum(batch_sizes)})")
 
+
     # calculate steps per epoch
+    #steps per epoch is hoe many batches are in each epoch
     steps_per_epochs = [
         len(env) / batch_size
         for (env, _), batch_size in iterator.train(zip(in_splits, batch_sizes))
     ]
     steps_per_epoch = min(steps_per_epochs)
     # epoch is computed by steps_per_epoch
+
+
     prt_steps = ", ".join([f"{step:.2f}" for step in steps_per_epochs])
     logger.info(f"steps-per-epoch for each domain: {prt_steps} -> min = {steps_per_epoch:.2f}")
+
 
     # setup loaders
     train_loaders = [
@@ -149,6 +161,8 @@ def train(test_envs, args, hparams, n_steps, checkpoint_freq, logger, writer, ta
     )
 
     swad = None
+
+    #if block get evaluated for first run of training
     if hparams["swad"]:
         swad_algorithm = swa_utils.AveragedModel(algorithm)
         swad_cls = getattr(swad_module, hparams["swad"])

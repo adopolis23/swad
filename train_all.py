@@ -20,6 +20,8 @@ from domainbed.trainer import train
 
 
 def main():
+
+    #parser for taking in command line argumnets
     parser = argparse.ArgumentParser(description="Domain generalization")
     parser.add_argument("name", type=str)
     parser.add_argument("configs", nargs="*")
@@ -55,15 +57,23 @@ def main():
         help="[fast, all]. if fast, ignore train_in datasets in evaluation time.",
     )
     parser.add_argument("--prebuild_loader", action="store_true", help="Pre-build eval loaders")
+
+
+    #gets the args from the parser, all command line args passed in
     args, left_argv = parser.parse_known_args()
 
+
+
+
     # setup hparams
+    #hparams is a dictionary with keys being diffferent parameters that can be set. 
     hparams = hparams_registry.default_hparams(args.algorithm, args.dataset)
 
     keys = ["config.yaml"] + args.configs
     keys = [open(key, encoding="utf8") for key in keys]
     hparams = Config(*keys, default=hparams)
     hparams.argv_update(left_argv)
+
 
     # setup debug
     if args.debug:
@@ -131,7 +141,12 @@ def main():
         logger.nofmt(f"\tenv{i}: {env_property} (#{len(dataset[i])})")
     logger.nofmt("")
 
+
+    
+
+    #nsteps assigned
     n_steps = args.steps or dataset.N_STEPS
+
     checkpoint_freq = args.checkpoint_freq or dataset.CHECKPOINT_FREQ
     logger.info(f"n_steps = {n_steps}")
     logger.info(f"checkpoint_freq = {checkpoint_freq}")
@@ -149,6 +164,9 @@ def main():
     ###########################################################################
     all_records = []
     results = collections.defaultdict(list)
+
+    hparams["batch_size"] = 16
+
 
     for test_env in args.test_envs:
         res, records = train(
