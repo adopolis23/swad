@@ -136,6 +136,7 @@ def main():
 
     # print dataset information
     logger.nofmt("Dataset:")
+
     logger.nofmt(f"\t[{args.dataset}] #envs={len(dataset)}, #classes={dataset.num_classes}")
     for i, env_property in enumerate(dataset.environments):
         logger.nofmt(f"\tenv{i}: {env_property} (#{len(dataset[i])})")
@@ -147,7 +148,9 @@ def main():
     #nsteps assigned
     n_steps = args.steps or dataset.N_STEPS
 
-    checkpoint_freq = args.checkpoint_freq or dataset.CHECKPOINT_FREQ
+    #checkpoint_freq = args.checkpoint_freq or dataset.CHECKPOINT_FREQ
+    checkpoint_freq = 10
+
     logger.info(f"n_steps = {n_steps}")
     logger.info(f"checkpoint_freq = {checkpoint_freq}")
 
@@ -165,7 +168,10 @@ def main():
     all_records = []
     results = collections.defaultdict(list)
 
+    #custom settings
     hparams["batch_size"] = 16
+    checkpoint_freq = 10
+
 
 
     for test_env in args.test_envs:
@@ -173,7 +179,7 @@ def main():
             test_env,
             args=args,
             hparams=hparams,
-            n_steps=n_steps,
+            n_steps=100,
             checkpoint_freq=checkpoint_freq,
             logger=logger,
             writer=writer,
